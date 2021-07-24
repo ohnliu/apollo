@@ -17,6 +17,7 @@
 #include "modules/drivers/lidar/velodyne/driver/driver.h"
 
 #include <cmath>
+#include <cstring>
 #include <ctime>
 #include <string>
 #include <thread>
@@ -64,13 +65,12 @@ bool VelodyneDriver::Init() {
 
 void VelodyneDriver::SetBaseTimeFromNmeaTime(NMEATimePtr nmea_time,
                                              uint64_t* basetime) {
-  tm time;
+  struct tm time;
+  std::memset(&time, 0, sizeof(tm));
   time.tm_year = nmea_time->year + (2000 - 1900);
   time.tm_mon = nmea_time->mon - 1;
   time.tm_mday = nmea_time->day;
   time.tm_hour = nmea_time->hour;
-  time.tm_min = 0;
-  time.tm_sec = 0;
 
   // set last gps time using gps socket packet
   last_gps_time_ =
@@ -216,8 +216,7 @@ void VelodyneDriver::UpdateGpsTopHour(uint32_t current_time) {
     return;
   }
   if (last_gps_time_ > current_time) {
-    int32_t time_diff = static_cast<int32_t>(last_gps_time_ - current_time);
-    if (time_diff > 3599000000) {
+    if ((last_gps_time_ - current_time) > 3599000000) {
       basetime_ += static_cast<uint64_t>(3600 * 1e6);
       AINFO << "Base time plus 3600s. Model: " << config_.model() << std::fixed
             << ". current:" << current_time << ", last time:" << last_gps_time_;

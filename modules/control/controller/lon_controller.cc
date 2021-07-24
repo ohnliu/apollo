@@ -255,14 +255,14 @@ Status LonController::ComputeControlCommand(
         speed_leadlag_controller_.InnerstateSaturationStatus());
   }
 
-  double slope_offset_compenstaion = digital_filter_pitch_angle_.Filter(
+  double slope_offset_compensation = digital_filter_pitch_angle_.Filter(
       GRA_ACC * std::sin(injector_->vehicle_state()->pitch()));
 
-  if (std::isnan(slope_offset_compenstaion)) {
-    slope_offset_compenstaion = 0;
+  if (std::isnan(slope_offset_compensation)) {
+    slope_offset_compensation = 0;
   }
 
-  debug->set_slope_offset_compensation(slope_offset_compenstaion);
+  debug->set_slope_offset_compensation(slope_offset_compensation);
 
   double acceleration_cmd =
       acceleration_cmd_closeloop + debug->preview_acceleration_reference() +
@@ -359,7 +359,6 @@ Status LonController::ComputeControlCommand(
 
   if (std::fabs(injector_->vehicle_state()->linear_velocity()) <=
           vehicle_param_.max_abs_speed_when_stopped() ||
-      chassis->gear_location() == trajectory_message_->gear() ||
       chassis->gear_location() == canbus::Chassis::GEAR_NEUTRAL) {
     cmd->set_gear_location(trajectory_message_->gear());
   } else {
